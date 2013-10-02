@@ -37,19 +37,47 @@ def get_image(story_hash)
   end
 end
 
+def make_story(story_hash)
+  "<li>
+  <a href=\"#{get_url(story_hash)}\">
+  <h1>#{get_title(story_hash)}</h1>
+  <img src=\"#{get_image(story_hash)}\"/>
+  <h4>Upvotes:</h4>
+  <p>#{get_ups(story_hash)}</p>
+  <h4>Downvotes:</h4>
+  <p>#{get_downs(story_hash)}</p>
+  </a>
+  </li>
+  "
+end
+
+def make_html(story_array)
+  beginning_html = "
+  <html>
+  <head>
+  </head>
+  <body>
+  <ul>"
+  ending_html = "
+  </ul>
+  </body>
+  </html>"
+
+  body_html = ""
+
+  story_array.each do |story_hash|
+    if !over_18?(story_hash)
+      body_html << make_story(story_hash)
+    end
+  end
+  
+  beginning_html + body_html + ending_html
+end
+
 ### MAIN
 
 reddit_hash = JSON.parse(RestClient.get('http://reddit.com/.json'))
 story_array = reddit_hash["data"]["children"]
 
-story_array.each do |story_hash|
-  if !over_18?(story_hash)
-    puts "\n<h1>#{get_title(story_hash)}</h1>"
-    puts "<a href=\"#{get_url(story_hash)}\"></a>"
-    puts "<p>#{get_ups(story_hash)}</p>"
-    puts "<p>#{get_downs(story_hash)}</p>"
-    puts "<img src=\"#{get_image(story_hash)}\"/>"
-  end
-end
-
-# binding.pry
+filename = "reddit.html"
+File.open(filename, "w+") {|f| f.write(make_html(story_array)) }
